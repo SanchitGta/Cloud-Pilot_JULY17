@@ -1,0 +1,7 @@
+node_modules/
+server/data/*.db
+.env
+server/.env
+web/.env
+server/dist/
+web/dist/

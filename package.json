@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev -w server",
+    "dev:web": "npm run dev -w web",
+    "test": "npm run test -w server && npm run test -w web"
+  }
+}
