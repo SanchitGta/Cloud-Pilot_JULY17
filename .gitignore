@@ -5,3 +5,4 @@ server/.env
 web/.env
 server/dist/
 web/dist/
+.mindlap/config.json
