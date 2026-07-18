@@ -55,3 +55,18 @@ CREATE TABLE IF NOT EXISTS scan_s3_buckets (
   size_30d_ago_bytes REAL,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
+
+CREATE TABLE IF NOT EXISTS findings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  scan_id INTEGER NOT NULL REFERENCES scans(id),
+  resource_type TEXT NOT NULL CHECK (resource_type IN ('EC2','EBS','RDS','S3')),
+  resource_id TEXT NOT NULL,
+  category TEXT NOT NULL CHECK (category IN ('IDLE_EC2','UNATTACHED_EBS','UNDERUTILIZED_RDS','LOW_ACTIVITY_S3')),
+  severity TEXT NOT NULL CHECK (severity IN ('LOW','MEDIUM','HIGH')),
+  estimated_monthly_savings REAL NOT NULL,
+  recommendation_text TEXT NOT NULL,
+  explanation TEXT,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_findings_scan_id ON findings(scan_id);

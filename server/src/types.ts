@@ -98,3 +98,38 @@ export interface S3BucketData {
   objectCount: number;
   size30dAgoBytes: number | null;
 }
+
+export type FindingResourceType = 'EC2' | 'EBS' | 'RDS' | 'S3';
+export type FindingCategory =
+  | 'IDLE_EC2'
+  | 'UNATTACHED_EBS'
+  | 'UNDERUTILIZED_RDS'
+  | 'LOW_ACTIVITY_S3';
+export type FindingSeverity = 'LOW' | 'MEDIUM' | 'HIGH';
+
+export interface FindingRow {
+  id: number;
+  scan_id: number;
+  resource_type: FindingResourceType;
+  resource_id: string;
+  category: FindingCategory;
+  severity: FindingSeverity;
+  estimated_monthly_savings: number;
+  recommendation_text: string;
+  explanation: string | null;
+  created_at: string;
+}
+
+export interface FindingData {
+  resourceType: FindingResourceType;
+  resourceId: string;
+  category: FindingCategory;
+  severity: FindingSeverity;
+  estimatedMonthlySavings: number;
+  recommendationText: string;
+}
+
+export interface FindingsSummary {
+  count: number;
+  totalMonthlySavings: number;
+}

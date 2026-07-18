@@ -6,6 +6,7 @@ import * as ec2Collector from '../collectors/ec2Collector.js';
 import * as ebsCollector from '../collectors/ebsCollector.js';
 import * as rdsCollector from '../collectors/rdsCollector.js';
 import * as s3Collector from '../collectors/s3Collector.js';
+import { generateFindings } from './recommendationEngine.js';
 import type {
   AwsCredentials,
   Ec2InstanceData,
@@ -47,6 +48,12 @@ export async function runScan(scanId: number): Promise<void> {
     })();
 
     scansRepo.markSucceeded(scanId);
+
+    try {
+      generateFindings(scanId, creds.region);
+    } catch (err) {
+      console.error(`Recommendation engine failed for scan ${scanId}:`, err);
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     scansRepo.markFailed(scanId, message);
