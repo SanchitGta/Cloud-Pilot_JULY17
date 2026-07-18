@@ -7,6 +7,7 @@ import * as ebsCollector from '../collectors/ebsCollector.js';
 import * as rdsCollector from '../collectors/rdsCollector.js';
 import * as s3Collector from '../collectors/s3Collector.js';
 import { generateFindings } from './recommendationEngine.js';
+import * as explanationService from './explanationService.js';
 import type {
   AwsCredentials,
   Ec2InstanceData,
@@ -51,6 +52,14 @@ export async function runScan(scanId: number): Promise<void> {
 
     try {
       generateFindings(scanId, creds.region);
+      // Fire-and-forget: never awaited, so it structurally cannot block scan
+      // completion for any current or future caller of runScan. Placed inside
+      // this try so it's skipped if generateFindings itself threw (nothing to
+      // explain if finding insertion failed). The .catch is defense-in-depth —
+      // generateExplanations already catches per-finding errors internally.
+      void explanationService.generateExplanations(scanId).catch((err) => {
+        console.error(`Explanation generation failed for scan ${scanId}:`, err);
+      });
     } catch (err) {
       console.error(`Recommendation engine failed for scan ${scanId}:`, err);
     }
