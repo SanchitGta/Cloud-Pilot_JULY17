@@ -4,7 +4,11 @@ import type { OverviewResponse } from '../types';
 
 const POLL_INTERVAL_MS = 5000;
 
-export default function OverviewPage() {
+interface OverviewPageProps {
+  onViewRecommendations: () => void;
+}
+
+export default function OverviewPage({ onViewRecommendations }: OverviewPageProps) {
   const [data, setData] = useState<OverviewResponse | null>(null);
 
   useEffect(() => {
@@ -63,6 +67,7 @@ export default function OverviewPage() {
           <dt>Total findings</dt>
           <dd>{totalFindings}</dd>
         </dl>
+        <button onClick={onViewRecommendations}>View Recommendations</button>
       </div>
     );
   }

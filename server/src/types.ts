@@ -149,3 +149,8 @@ export type OverviewResult =
   | { status: 'NOT_CONNECTED' }
   | { status: 'AWAITING_FIRST_SCAN' }
   | { status: 'READY'; metrics: OverviewMetrics };
+
+export type FindingsResult =
+  | { status: 'NOT_CONNECTED' }
+  | { status: 'AWAITING_FIRST_SCAN' }
+  | { status: 'READY'; scanId: number; scanCompletedAt: string; findings: FindingRow[] };

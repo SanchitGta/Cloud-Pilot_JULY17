@@ -1,4 +1,4 @@
-import type { ApiError, Connection, OverviewResponse, Scan } from '../types';
+import type { ApiError, Connection, FindingsResponse, OverviewResponse, Scan } from '../types';
 
 export async function getCurrentConnection(): Promise<Connection | null> {
   const res = await fetch('/api/connections/current');
@@ -8,6 +8,11 @@ export async function getCurrentConnection(): Promise<Connection | null> {
 
 export async function getOverview(): Promise<OverviewResponse> {
   const res = await fetch('/api/overview');
+  return res.json();
+}
+
+export async function getFindings(): Promise<FindingsResponse> {
+  const res = await fetch('/api/findings');
   return res.json();
 }
 
