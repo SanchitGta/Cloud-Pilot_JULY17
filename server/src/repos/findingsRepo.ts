@@ -54,3 +54,27 @@ export function getFindingsSummary(scanId: number): FindingsSummary {
     .get(scanId) as { count: number; totalMonthlySavings: number };
   return { count: row.count, totalMonthlySavings: row.totalMonthlySavings };
 }
+
+// Unlike getFindingsSummary (which COALESCEs to zero for a single scan), a scan_id
+// with zero findings has no row in the GROUP BY output and is simply absent from the
+// returned Map. Callers must treat a missing key as { count: 0, totalMonthlySavings: 0 }.
+export function getFindingsSummaryByScanIds(
+  scanIds: number[]
+): Map<number, FindingsSummary> {
+  if (scanIds.length === 0) {
+    return new Map();
+  }
+  const db = getDb();
+  const placeholders = scanIds.map(() => '?').join(',');
+  const rows = db
+    .prepare(
+      `SELECT scan_id as scanId, COUNT(*) as count, SUM(estimated_monthly_savings) as totalMonthlySavings
+       FROM findings WHERE scan_id IN (${placeholders}) GROUP BY scan_id`
+    )
+    .all(...scanIds) as { scanId: number; count: number; totalMonthlySavings: number }[];
+  const result = new Map<number, FindingsSummary>();
+  for (const row of rows) {
+    result.set(row.scanId, { count: row.count, totalMonthlySavings: row.totalMonthlySavings });
+  }
+  return result;
+}

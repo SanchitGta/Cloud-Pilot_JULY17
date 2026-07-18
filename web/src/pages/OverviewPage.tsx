@@ -4,7 +4,11 @@ import type { OverviewResponse } from '../types';
 
 const POLL_INTERVAL_MS = 5000;
 
-export default function OverviewPage() {
+interface OverviewPageProps {
+  onViewScanHistory: () => void;
+}
+
+export default function OverviewPage({ onViewScanHistory }: OverviewPageProps) {
   const [data, setData] = useState<OverviewResponse | null>(null);
 
   useEffect(() => {
@@ -46,6 +50,7 @@ export default function OverviewPage() {
       <div>
         <h1>Overview</h1>
         <p>Your first infrastructure scan is running. Metrics will appear here once it completes.</p>
+        <button onClick={onViewScanHistory}>Scan History</button>
       </div>
     );
   }
@@ -63,6 +68,7 @@ export default function OverviewPage() {
           <dt>Total findings</dt>
           <dd>{totalFindings}</dd>
         </dl>
+        <button onClick={onViewScanHistory}>Scan History</button>
       </div>
     );
   }
@@ -73,6 +79,7 @@ export default function OverviewPage() {
     <div>
       <h1>Overview</h1>
       <p>No AWS account is connected yet.</p>
+      <button onClick={onViewScanHistory}>Scan History</button>
     </div>
   );
 }

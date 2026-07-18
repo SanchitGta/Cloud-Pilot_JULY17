@@ -1,13 +1,17 @@
 import type Database from 'better-sqlite3';
 import { getDb } from '../db/index.js';
-import type { ScanRow } from '../types.js';
+import type { ScanRow, ScanTrigger } from '../types.js';
 
-export function insertScan(tx: Database.Database, connectionId: number): ScanRow {
+export function insertScan(
+  tx: Database.Database,
+  connectionId: number,
+  trigger: ScanTrigger
+): ScanRow {
   const row = tx
     .prepare(
-      `INSERT INTO scans (connection_id, status) VALUES (?, 'PENDING') RETURNING *`
+      `INSERT INTO scans (connection_id, status, trigger) VALUES (?, 'PENDING', ?) RETURNING *`
     )
-    .get(connectionId) as ScanRow;
+    .get(connectionId, trigger) as ScanRow;
   return row;
 }
 
@@ -63,4 +67,22 @@ export function markFailed(scanId: number, errorMessage: string): ScanRow {
     )
     .get(errorMessage, scanId) as ScanRow;
   return row;
+}
+
+export function listScans(connectionId: number): ScanRow[] {
+  const db = getDb();
+  return db
+    .prepare('SELECT * FROM scans WHERE connection_id = ? ORDER BY id DESC')
+    .all(connectionId) as ScanRow[];
+}
+
+export function getActiveScan(connectionId: number): ScanRow | null {
+  const db = getDb();
+  const row = db
+    .prepare(
+      `SELECT * FROM scans WHERE connection_id = ? AND status IN ('PENDING','RUNNING')
+       ORDER BY id DESC LIMIT 1`
+    )
+    .get(connectionId) as ScanRow | undefined;
+  return row ?? null;
 }

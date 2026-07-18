@@ -1,4 +1,4 @@
-import type { ApiError, Connection, OverviewResponse, Scan } from '../types';
+import type { ApiError, Connection, OverviewResponse, RescanResponse, Scan, ScanHistoryResponse } from '../types';
 
 export async function getCurrentConnection(): Promise<Connection | null> {
   const res = await fetch('/api/connections/current');
@@ -14,6 +14,20 @@ export async function getOverview(): Promise<OverviewResponse> {
 export async function getRegions(): Promise<string[]> {
   const res = await fetch('/api/regions');
   return res.json();
+}
+
+export async function getScanHistory(): Promise<ScanHistoryResponse> {
+  const res = await fetch('/api/scans');
+  return res.json();
+}
+
+export async function startRescan(): Promise<RescanResponse | { error: ApiError }> {
+  const res = await fetch('/api/scans', { method: 'POST' });
+  const body = await res.json();
+  if (!res.ok) {
+    return { error: body.error };
+  }
+  return body;
 }
 
 export async function createConnection(input: {

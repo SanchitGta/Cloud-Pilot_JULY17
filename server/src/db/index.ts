@@ -25,5 +25,15 @@ export function getDb(): Database.Database {
   const schema = readFileSync(join(__dirname, 'schema.sql'), 'utf-8');
   db.exec(schema);
 
+  // Idempotent migration: add scans.trigger for databases created before this column existed.
+  // CREATE TABLE IF NOT EXISTS is a no-op once the table exists, so schema.sql alone won't
+  // add this column to any already-existing .db file — and this project has no migration runner.
+  const scanColumns = db.prepare('PRAGMA table_info(scans)').all() as { name: string }[];
+  if (!scanColumns.some((c) => c.name === 'trigger')) {
+    db.exec(
+      `ALTER TABLE scans ADD COLUMN trigger TEXT NOT NULL DEFAULT 'AUTOMATIC' CHECK (trigger IN ('AUTOMATIC','MANUAL'))`
+    );
+  }
+
   return db;
 }

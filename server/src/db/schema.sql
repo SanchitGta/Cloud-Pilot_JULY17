@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS scans (
   started_at TEXT,
   completed_at TEXT,
   error_message TEXT,
+  trigger TEXT NOT NULL DEFAULT 'AUTOMATIC' CHECK (trigger IN ('AUTOMATIC','MANUAL')),
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
 

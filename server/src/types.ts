@@ -10,6 +10,8 @@ export interface ConnectionRow {
 
 export type ScanStatus = 'PENDING' | 'RUNNING' | 'SUCCEEDED' | 'FAILED';
 
+export type ScanTrigger = 'AUTOMATIC' | 'MANUAL';
+
 export interface ScanRow {
   id: number;
   connection_id: number;
@@ -17,8 +19,25 @@ export interface ScanRow {
   started_at: string | null;
   completed_at: string | null;
   error_message: string | null;
+  trigger: ScanTrigger;
   created_at: string;
 }
+
+export interface ScanHistoryEntry {
+  id: number;
+  status: ScanStatus;
+  trigger: ScanTrigger;
+  createdAt: string;
+  completedAt: string | null;
+  errorMessage: string | null;
+  findingsCount: number | null;
+  estimatedMonthlySavings: number | null;
+}
+
+export type RescanResult =
+  | { kind: 'no_connection'; message: string }
+  | { kind: 'scan_in_progress'; message: string }
+  | { kind: 'success'; scan: ScanRow };
 
 export interface ConnectInput {
   accessKeyId: string;

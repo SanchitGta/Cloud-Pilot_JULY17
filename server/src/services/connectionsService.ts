@@ -42,7 +42,7 @@ export async function connect(input: ConnectInput): Promise<ConnectResult> {
       awsAccountId: awsResult.accountId,
       awsArn: awsResult.arn,
     });
-    let scan = scansRepo.insertScan(db, connection.id);
+    let scan = scansRepo.insertScan(db, connection.id, 'AUTOMATIC');
     scan = scansRepo.markRunning(db, scan.id);
     return { connection, scan };
   })();

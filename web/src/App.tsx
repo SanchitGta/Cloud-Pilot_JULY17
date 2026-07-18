@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { getCurrentConnection } from './api/client';
 import ConnectPage from './pages/ConnectPage';
 import OverviewPage from './pages/OverviewPage';
+import ScanHistoryPage from './pages/ScanHistoryPage';
 
-type Screen = 'loading' | 'connect' | 'overview';
+type Screen = 'loading' | 'connect' | 'overview' | 'scanHistory';
 
 export default function App() {
   // App is the single place that decides which top-level screen is active.
@@ -22,8 +23,12 @@ export default function App() {
     return <p>Loading...</p>;
   }
 
+  if (screen === 'scanHistory') {
+    return <ScanHistoryPage onBack={() => setScreen('overview')} />;
+  }
+
   if (screen === 'overview') {
-    return <OverviewPage />;
+    return <OverviewPage onViewScanHistory={() => setScreen('scanHistory')} />;
   }
 
   return <ConnectPage onConnected={() => setScreen('overview')} />;

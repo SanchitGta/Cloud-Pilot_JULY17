@@ -6,6 +6,32 @@ export interface Connection {
   createdAt: string;
 }
 
+export type ScanTrigger = 'AUTOMATIC' | 'MANUAL';
+
+export interface ScanHistoryEntry {
+  id: number;
+  status: Scan['status'];
+  trigger: ScanTrigger;
+  createdAt: string;
+  completedAt: string | null;
+  errorMessage: string | null;
+  findingsCount: number | null;
+  estimatedMonthlySavings: number | null;
+}
+
+export interface ScanHistoryResponse {
+  scans: ScanHistoryEntry[];
+}
+
+export interface RescanResponse {
+  scan: {
+    id: number;
+    status: Scan['status'];
+    trigger: ScanTrigger;
+    createdAt: string;
+  };
+}
+
 export interface Scan {
   id: number;
   status: 'PENDING' | 'RUNNING' | 'SUCCEEDED' | 'FAILED';
