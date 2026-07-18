@@ -13,6 +13,10 @@ vi.mock('../src/services/awsValidation.js', () => ({
   validateCredentials: vi.fn(),
 }));
 
+vi.mock('../src/services/scanOrchestrator.js', () => ({
+  runScan: vi.fn().mockResolvedValue(undefined),
+}));
+
 function buildApp() {
   const app = express();
   app.use(express.json());
