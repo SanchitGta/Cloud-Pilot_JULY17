@@ -133,3 +133,19 @@ export interface FindingsSummary {
   count: number;
   totalMonthlySavings: number;
 }
+
+// Overview read model — three-state response for GET /api/overview.
+export type OverviewStatus = 'NOT_CONNECTED' | 'AWAITING_FIRST_SCAN' | 'READY';
+
+export interface OverviewMetrics {
+  totalResourcesScanned: number;
+  totalMonthlySavings: number;
+  totalFindings: number;
+  scanId: number;
+  scanCompletedAt: string;
+}
+
+export type OverviewResult =
+  | { status: 'NOT_CONNECTED' }
+  | { status: 'AWAITING_FIRST_SCAN' }
+  | { status: 'READY'; metrics: OverviewMetrics };

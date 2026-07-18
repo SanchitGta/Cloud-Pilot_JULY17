@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
-import { createConnection, getCurrentConnection, getRegions } from '../api/client';
-import type { Connection, Scan } from '../types';
+import { createConnection, getRegions } from '../api/client';
 
-type PageState = 'loading' | 'form' | 'confirmed';
+type PageState = 'loading' | 'form';
 
-export default function ConnectPage() {
+interface ConnectPageProps {
+  // Called after a successful connect so App can route to the Overview screen.
+  onConnected: () => void;
+}
+
+export default function ConnectPage({ onConnected }: ConnectPageProps) {
   const [pageState, setPageState] = useState<PageState>('loading');
   const [regions, setRegions] = useState<string[]>([]);
-  const [connection, setConnection] = useState<Connection | null>(null);
-  const [scan, setScan] = useState<Scan | null>(null);
 
   const [accessKeyId, setAccessKeyId] = useState('');
   const [secretAccessKey, setSecretAccessKey] = useState('');
@@ -18,19 +20,10 @@ export default function ConnectPage() {
 
   useEffect(() => {
     (async () => {
-      const [existingConnection, availableRegions] = await Promise.all([
-        getCurrentConnection(),
-        getRegions(),
-      ]);
-
+      const availableRegions = await getRegions();
       setRegions(availableRegions);
-      if (existingConnection) {
-        setConnection(existingConnection);
-        setPageState('confirmed');
-      } else {
-        setRegion(availableRegions[0] ?? '');
-        setPageState('form');
-      }
+      setRegion(availableRegions[0] ?? '');
+      setPageState('form');
     })();
   }, []);
 
@@ -48,26 +41,12 @@ export default function ConnectPage() {
       return;
     }
 
-    setConnection(result.connection);
-    setScan(result.scan);
-    setPageState('confirmed');
     setSubmitting(false);
+    onConnected();
   }
 
   if (pageState === 'loading') {
     return <p>Loading...</p>;
-  }
-
-  if (pageState === 'confirmed' && connection) {
-    return (
-      <div>
-        <h1>AWS account connected</h1>
-        <p>Account: {connection.awsAccountId}</p>
-        <p>Region: {connection.region}</p>
-        <p>Connected: {connection.createdAt}</p>
-        {scan && <p>Initial infrastructure scan started (scan #{scan.id}).</p>}
-      </div>
-    );
   }
 
   return (

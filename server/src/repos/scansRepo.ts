@@ -38,6 +38,22 @@ export function markSucceeded(scanId: number): ScanRow {
   return row;
 }
 
+export function getLatestSucceededScan(connectionId: number): ScanRow | null {
+  const db = getDb();
+  // ORDER BY completed_at DESC (not id DESC) so this stays correct once re-scans
+  // exist and could complete out of insertion order; id DESC breaks ties on
+  // equal TEXT-timestamp resolution.
+  const row = db
+    .prepare(
+      `SELECT * FROM scans
+       WHERE connection_id = ? AND status = 'SUCCEEDED'
+       ORDER BY completed_at DESC, id DESC
+       LIMIT 1`
+    )
+    .get(connectionId) as ScanRow | undefined;
+  return row ?? null;
+}
+
 export function markFailed(scanId: number, errorMessage: string): ScanRow {
   const db = getDb();
   const row = db

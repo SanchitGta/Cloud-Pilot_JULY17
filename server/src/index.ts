@@ -3,6 +3,7 @@ import { loadEnv } from './env.js';
 import { getDb } from './db/index.js';
 import { connectionsRouter } from './routes/connections.js';
 import { regionsRouter } from './routes/regions.js';
+import { overviewRouter } from './routes/overview.js';
 
 const env = loadEnv();
 getDb();
@@ -11,6 +12,7 @@ const app = express();
 app.use(express.json());
 app.use('/api', connectionsRouter);
 app.use('/api', regionsRouter);
+app.use('/api', overviewRouter);
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
