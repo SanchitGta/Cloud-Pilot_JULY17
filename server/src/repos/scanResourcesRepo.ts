@@ -94,3 +94,19 @@ export function getS3Buckets(scanId: number): S3BucketRow[] {
     .prepare('SELECT * FROM scan_s3_buckets WHERE scan_id=? ORDER BY bucket_name')
     .all(scanId) as S3BucketRow[];
 }
+
+// Combined count across all four resource tables for one scan — aggregated in
+// SQL (single round trip), matching the getFindingsSummary precedent.
+export function countResources(scanId: number): number {
+  const db = getDb();
+  const row = db
+    .prepare(
+      `SELECT
+         (SELECT COUNT(*) FROM scan_ec2_instances WHERE scan_id = ?) +
+         (SELECT COUNT(*) FROM scan_ebs_volumes   WHERE scan_id = ?) +
+         (SELECT COUNT(*) FROM scan_rds_instances WHERE scan_id = ?) +
+         (SELECT COUNT(*) FROM scan_s3_buckets    WHERE scan_id = ?) AS total`
+    )
+    .get(scanId, scanId, scanId, scanId) as { total: number };
+  return row.total;
+}

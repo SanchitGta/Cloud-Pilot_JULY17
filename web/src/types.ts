@@ -16,3 +16,18 @@ export interface ApiError {
   code: string;
   message: string;
 }
+
+export type OverviewStatus = 'NOT_CONNECTED' | 'AWAITING_FIRST_SCAN' | 'READY';
+
+export interface OverviewMetrics {
+  totalResourcesScanned: number;
+  totalMonthlySavings: number;
+  totalFindings: number;
+  scanId: number;
+  scanCompletedAt: string;
+}
+
+export interface OverviewResponse {
+  status: OverviewStatus;
+  overview: OverviewMetrics | null;
+}
