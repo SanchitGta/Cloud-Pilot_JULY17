@@ -6,6 +6,7 @@ import * as scansRepo from '../repos/scansRepo.js';
 import type { ConnectInput, ConnectResult } from '../types.js';
 import { isValidRegion } from '../constants/awsRegions.js';
 import * as awsValidation from './awsValidation.js';
+import { runScan } from './scanOrchestrator.js';
 
 export async function connect(input: ConnectInput): Promise<ConnectResult> {
   if (!input.accessKeyId || !input.accessKeyId.trim()) {
@@ -45,6 +46,10 @@ export async function connect(input: ConnectInput): Promise<ConnectResult> {
     scan = scansRepo.markRunning(db, scan.id);
     return { connection, scan };
   })();
+
+  void runScan(result.scan.id).catch((err) => {
+    console.error(`Unexpected error in runScan for scan ${result.scan.id}:`, err);
+  });
 
   return { kind: 'success', connection: result.connection, scan: result.scan };
 }

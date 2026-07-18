@@ -26,3 +26,25 @@ export function getScan(scanId: number): ScanRow | null {
   const row = db.prepare('SELECT * FROM scans WHERE id = ?').get(scanId) as ScanRow | undefined;
   return row ?? null;
 }
+
+export function markSucceeded(scanId: number): ScanRow {
+  const db = getDb();
+  const row = db
+    .prepare(
+      `UPDATE scans SET status = 'SUCCEEDED', completed_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+       WHERE id = ? RETURNING *`
+    )
+    .get(scanId) as ScanRow;
+  return row;
+}
+
+export function markFailed(scanId: number, errorMessage: string): ScanRow {
+  const db = getDb();
+  const row = db
+    .prepare(
+      `UPDATE scans SET status = 'FAILED', completed_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), error_message = ?
+       WHERE id = ? RETURNING *`
+    )
+    .get(errorMessage, scanId) as ScanRow;
+  return row;
+}

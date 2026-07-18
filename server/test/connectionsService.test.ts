@@ -10,6 +10,10 @@ vi.mock('../src/services/awsValidation.js', () => ({
   validateCredentials: vi.fn(),
 }));
 
+vi.mock('../src/services/scanOrchestrator.js', () => ({
+  runScan: vi.fn().mockResolvedValue(undefined),
+}));
+
 const validInput = {
   accessKeyId: 'AKIAEXAMPLE',
   secretAccessKey: 'shh-its-a-secret',
