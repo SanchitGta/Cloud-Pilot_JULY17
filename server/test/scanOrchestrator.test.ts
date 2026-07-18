@@ -9,6 +9,7 @@ import * as ec2Collector from '../src/collectors/ec2Collector.js';
 import * as ebsCollector from '../src/collectors/ebsCollector.js';
 import * as rdsCollector from '../src/collectors/rdsCollector.js';
 import * as s3Collector from '../src/collectors/s3Collector.js';
+import * as recommendationEngine from '../src/services/recommendationEngine.js';
 import { runScan } from '../src/services/scanOrchestrator.js';
 
 vi.mock('../src/repos/connectionsRepo.js', () => ({
@@ -48,7 +49,7 @@ describe('scanOrchestrator.runScan', () => {
   beforeEach(() => {
     const db = getDb();
     db.exec(
-      `DELETE FROM scan_ec2_instances; DELETE FROM scan_ebs_volumes;
+      `DELETE FROM findings; DELETE FROM scan_ec2_instances; DELETE FROM scan_ebs_volumes;
        DELETE FROM scan_rds_instances; DELETE FROM scan_s3_buckets;
        DELETE FROM scans; DELETE FROM connections;`
     );
@@ -178,5 +179,42 @@ describe('scanOrchestrator.runScan', () => {
     expect(scan.status).toBe('FAILED');
     expect(scan.error_message).toBe('No AWS connection found.');
     expect(ec2Collector.collect).not.toHaveBeenCalled();
+  });
+
+  it('generates findings for a resource that triggers a detection rule after the scan succeeds', async () => {
+    vi.mocked(connectionsRepo.getDecryptedCredentials).mockReturnValue(creds);
+    vi.mocked(ec2Collector.collect).mockResolvedValue([
+      { instanceId: 'i-1', instanceType: 't3.micro', state: 'running', avgCpu14d: 1 },
+    ]);
+    vi.mocked(ebsCollector.collect).mockResolvedValue([]);
+    vi.mocked(rdsCollector.collect).mockResolvedValue([]);
+    vi.mocked(s3Collector.collect).mockResolvedValue([]);
+
+    const scanId = insertTestScan();
+    await runScan(scanId);
+
+    const scan = scansRepo.getScan(scanId)!;
+    expect(scan.status).toBe('SUCCEEDED');
+    expect(countRows('findings', scanId)).toBe(1);
+  });
+
+  it('keeps the scan SUCCEEDED with zero findings when the recommendation engine throws', async () => {
+    vi.mocked(connectionsRepo.getDecryptedCredentials).mockReturnValue(creds);
+    vi.mocked(ec2Collector.collect).mockResolvedValue([]);
+    vi.mocked(ebsCollector.collect).mockResolvedValue([]);
+    vi.mocked(rdsCollector.collect).mockResolvedValue([]);
+    vi.mocked(s3Collector.collect).mockResolvedValue([]);
+    const spy = vi.spyOn(recommendationEngine, 'generateFindings').mockImplementation(() => {
+      throw new Error('boom');
+    });
+
+    const scanId = insertTestScan();
+    await runScan(scanId);
+
+    const scan = scansRepo.getScan(scanId)!;
+    expect(scan.status).toBe('SUCCEEDED');
+    expect(countRows('findings', scanId)).toBe(0);
+
+    spy.mockRestore();
   });
 });
